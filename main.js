@@ -13,6 +13,14 @@ ipcMain.handle('set-fullscreen', (event, flag) => {
     if (win) win.setFullScreen(flag);
 });
 
+ipcMain.handle('close-window', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) win.close();
+});
+
+// Initialize Menu
+require('./main-process/menu');
+
 app.whenReady().then(() => {
     createWindow();
 

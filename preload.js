@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld('api', {
     renameFile: (oldName, newName) => ipcRenderer.invoke('rename-file', { oldName, newName }),
     openExternal: (url) => ipcRenderer.invoke('open-external', url),
     setFullscreen: (flag) => ipcRenderer.invoke('set-fullscreen', flag),
+    closeWindow: () => ipcRenderer.invoke('close-window'),
+    onCloseTab: (callback) => ipcRenderer.on('close-active-tab', () => callback()),
+    onNewFile: (callback) => ipcRenderer.on('new-file-command', () => callback()), // While I'm at it
+    onSaveFile: (callback) => ipcRenderer.on('save-file-command', () => callback()),
 });
