@@ -10,56 +10,99 @@ export function getEditor() {
 }
 
 export function initEditor() {
-    // Ensure we are looking at the global object
-    const CM = window.CodeMirror || CodeMirror;
+    // Check if editor was already initialized by inline script
+    if (window._earlyEditor) {
+        console.log('Using early-initialized editor');
+        editor = window._earlyEditor;
 
-    if (typeof CM === 'undefined') {
-        console.error('CodeMirror is not loaded (undefined)!');
-        alert('Critical Error: CodeMirror library could not be found. Check console for details.');
-        return;
-    }
-
-    try {
-        console.log('Attempting to initialize CodeMirror...');
-        editor = CM.fromTextArea(document.getElementById('code-editor'), {
-            mode: 'javascript',
-            theme: 'dracula',
-            lineNumbers: true,
-            lineWrapping: false,
-            gutters: ['CodeMirror-linenumbers', 'CodeMirror-lint-markers'],
-            lint: {
-                esversion: 11,
-                asi: true,
-                boss: true,
-                expr: true,
-                laxbreak: true,
-                laxcomma: true,
-                sub: true,
-                undef: false,
-                unused: false
-            },
-            autoCloseBrackets: true,
-            matchBrackets: true,
-            tabSize: 2,
-            indentWithTabs: false,
-            inputStyle: 'contenteditable',
-            extraKeys: {
-                'Cmd-Enter': () => document.getElementById('run-btn').click(),
-                'Ctrl-Enter': () => document.getElementById('run-btn').click(),
-                'F5': () => document.getElementById('run-btn').click(),
-                'Cmd-S': () => saveCurrentFile(),
-                'Ctrl-S': () => saveCurrentFile()
-            }
+        // Add keyboard shortcuts that require module imports
+        editor.setOption('extraKeys', {
+            'Cmd-Enter': () => document.getElementById('run-btn').click(),
+            'Ctrl-Enter': () => document.getElementById('run-btn').click(),
+            'F5': () => document.getElementById('run-btn').click(),
+            'Cmd-S': () => saveCurrentFile(),
+            'Ctrl-S': () => saveCurrentFile()
         });
 
-        if (!editor) {
-            throw new Error('CodeMirror.fromTextArea returned null/undefined');
+        // Enable linting after a short delay
+        setTimeout(() => {
+            if (typeof JSHINT !== 'undefined') {
+                editor.setOption('lint', {
+                    esversion: 11,
+                    asi: true,
+                    boss: true,
+                    expr: true,
+                    laxbreak: true,
+                    laxcomma: true,
+                    sub: true,
+                    undef: false,
+                    unused: false
+                });
+                console.log('Linting enabled');
+            }
+        }, 100);
+    } else {
+        // Fallback: Initialize normally if inline script didn't run
+        const CM = window.CodeMirror || CodeMirror;
+
+        if (typeof CM === 'undefined') {
+            console.error('CodeMirror is not loaded (undefined)!');
+            alert('Critical Error: CodeMirror library could not be found. Check console for details.');
+            return;
         }
 
-        console.log('CodeMirror initialized successfully.');
-    } catch (e) {
-        console.error('CodeMirror initialization failed:', e);
-        alert('CodeMirror Error: ' + e.message);
+        try {
+            console.log('Initializing CodeMirror (fallback path)...');
+
+            editor = CM.fromTextArea(document.getElementById('code-editor'), {
+                mode: 'javascript',
+                theme: 'dracula',
+                lineNumbers: true,
+                lineWrapping: false,
+                gutters: ['CodeMirror-linenumbers', 'CodeMirror-lint-markers'],
+                lint: false,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                tabSize: 2,
+                indentWithTabs: false,
+                inputStyle: 'contenteditable',
+                extraKeys: {
+                    'Cmd-Enter': () => document.getElementById('run-btn').click(),
+                    'Ctrl-Enter': () => document.getElementById('run-btn').click(),
+                    'F5': () => document.getElementById('run-btn').click(),
+                    'Cmd-S': () => saveCurrentFile(),
+                    'Ctrl-S': () => saveCurrentFile()
+                }
+            });
+
+            if (!editor) {
+                throw new Error('CodeMirror.fromTextArea returned null/undefined');
+            }
+
+            console.log('CodeMirror initialized successfully.');
+
+            // Enable linting AFTER initial render
+            setTimeout(() => {
+                if (typeof JSHINT !== 'undefined') {
+                    editor.setOption('lint', {
+                        esversion: 11,
+                        asi: true,
+                        boss: true,
+                        expr: true,
+                        laxbreak: true,
+                        laxcomma: true,
+                        sub: true,
+                        undef: false,
+                        unused: false
+                    });
+                    console.log('Linting enabled');
+                }
+            }, 100);
+
+        } catch (e) {
+            console.error('CodeMirror initialization failed:', e);
+            alert('CodeMirror Error: ' + e.message);
+        }
     }
 
 

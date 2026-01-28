@@ -38,9 +38,10 @@
     <script src="assets/vendor/codemirror/addon/edit/closebrackets.js"></script>
     <script src="assets/vendor/codemirror/addon/edit/matchbrackets.js"></script>
     <link rel="stylesheet" href="assets/vendor/codemirror/addon/lint/lint.css">
-    <script src="assets/vendor/jshint/jshint.js"></script>
-    <script src="assets/vendor/codemirror/addon/lint/lint.js"></script>
-    <script src="assets/vendor/codemirror/addon/lint/javascript-lint.js"></script>
+    <!-- Defer heavy linting scripts for faster initial load -->
+    <script src="assets/vendor/jshint/jshint.js" defer></script>
+    <script src="assets/vendor/codemirror/addon/lint/lint.js" defer></script>
+    <script src="assets/vendor/codemirror/addon/lint/javascript-lint.js" defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -111,8 +112,33 @@
                         <!-- Tabs will be populated here -->
                     </div>
 
-                    <div id="code-container">
-                        <textarea id="code-editor"></textarea>
+                    <div id="code-container" style="position: relative;">
+                        <textarea id="code-editor" style="opacity:0; z-index:-1; position:absolute;"></textarea>
+                        <!-- Initialize editor IMMEDIATELY after textarea exists -->
+                        <script>
+                            (function() {
+                                // Early initialization - runs before DOMContentLoaded
+                                if (typeof CodeMirror !== 'undefined') {
+                                    const textarea = document.getElementById('code-editor');
+                                    if (textarea && !window._editorInitialized) {
+                                        window._editorInitialized = true;
+                                        window._earlyEditor = CodeMirror.fromTextArea(textarea, {
+                                            mode: 'javascript',
+                                            theme: 'dracula',
+                                            lineNumbers: true,
+                                            lineWrapping: false,
+                                            gutters: ['CodeMirror-linenumbers', 'CodeMirror-lint-markers'],
+                                            lint: false,
+                                            autoCloseBrackets: true,
+                                            matchBrackets: true,
+                                            tabSize: 2,
+                                            indentWithTabs: false,
+                                            inputStyle: 'contenteditable'
+                                        });
+                                    }
+                                }
+                            })();
+                        </script>
                     </div>
                 </section>
                 

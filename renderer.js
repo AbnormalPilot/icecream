@@ -17,15 +17,16 @@ async function init() {
         return;
     }
 
+    // Initialize Core UI immediately
+    initTheme();
+    initUI();
+    initWhiteboard();
+    initEditor(); // Init editor FIRST to prevent FOUC
+    initFiles();
+    initConsole();
+
     try {
         const saved = await loadState();
-
-        initTheme();
-        initUI();
-        initWhiteboard();
-        initEditor();
-        initFiles();
-        initConsole();
 
         if (saved.theme) applyTheme(saved.theme);
         if (saved.appZoom) setZoom(saved.appZoom);

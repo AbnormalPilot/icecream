@@ -1,4 +1,11 @@
 /* CodeMirror Overrides */
+textarea#code-editor {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
 .CodeMirror {
   height: 100% !important;
   width: 100% !important;

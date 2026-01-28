@@ -14,6 +14,22 @@ let lastY = 0;
 
 function resizeCanvas() {
     if (!whiteboardCanvas) return;
+
+    // Check if resize is actually needed to avoid unnecessary clearing
+    if (whiteboardCanvas.width === window.innerWidth && whiteboardCanvas.height === window.innerHeight) {
+        return;
+    }
+
+    // Save existing content
+    let imageData = null;
+    if (ctx && whiteboardCanvas.width > 0 && whiteboardCanvas.height > 0) {
+        try {
+            imageData = ctx.getImageData(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+        } catch (e) {
+            console.warn('Could not save canvas content:', e);
+        }
+    }
+
     whiteboardCanvas.width = window.innerWidth;
     whiteboardCanvas.height = window.innerHeight;
 
@@ -21,27 +37,49 @@ function resizeCanvas() {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.lineWidth = 3;
-        // Restore default or current style if needed, 
-        // but for now simpler to reset to default/white unless tracking state
+        // Restore default or current style
+        // If we had content, we want to match the previous style, 
+        // but for now we default to white and let the color picker override if active
         ctx.strokeStyle = '#ffffff';
+
+        // Restore content
+        if (imageData) {
+            ctx.putImageData(imageData, 0, 0);
+        }
     }
+}
+
+function getPoint(e) {
+    const rect = whiteboardCanvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
 }
 
 function draw(e) {
     if (!isDrawing || !ctx) return;
 
+    const point = getPoint(e);
+
     ctx.beginPath();
     ctx.moveTo(lastX, lastY);
-    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.lineTo(point.x, point.y);
     ctx.stroke();
 
-    [lastX, lastY] = [e.offsetX, e.offsetY];
+    [lastX, lastY] = [point.x, point.y];
 }
 
 export function initWhiteboard() {
     if (!whiteboardCanvas) return;
 
-    ctx = whiteboardCanvas.getContext('2d');
+    ctx = whiteboardCanvas.getContext('2d', { willReadFrequently: true });
+
+    // Initial size
+    resizeCanvas();
+
+    // Handle specific resize events
+    window.addEventListener('resize', resizeCanvas);
 
     // Open
     whiteboardBtn.addEventListener('click', () => {
@@ -49,9 +87,13 @@ export function initWhiteboard() {
         if (window.api && window.api.setFullscreen) {
             window.api.setFullscreen(true);
         }
+
+        // Ensure size is correct but try to preserve data via our smart resize
         resizeCanvas();
-        // Default pen
-        if (ctx) ctx.strokeStyle = '#ffffff';
+
+        // Restore current color if needed, or default
+        const activeColor = document.querySelector('.color-dot.active')?.dataset.color || '#ffffff';
+        if (ctx) ctx.strokeStyle = activeColor === '#ffffff' ? '#ffffff' : activeColor;
     });
 
     // Close
@@ -65,7 +107,8 @@ export function initWhiteboard() {
     // Drawing Events
     whiteboardCanvas.addEventListener('mousedown', (e) => {
         isDrawing = true;
-        [lastX, lastY] = [e.offsetX, e.offsetY];
+        const point = getPoint(e);
+        [lastX, lastY] = [point.x, point.y];
     });
     whiteboardCanvas.addEventListener('mousemove', draw);
     whiteboardCanvas.addEventListener('mouseup', () => isDrawing = false);
