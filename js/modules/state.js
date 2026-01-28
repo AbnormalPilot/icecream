@@ -8,6 +8,7 @@ export const state = {
 
 export function saveState() {
     const data = {
+        files: state.files, // Save file list cache
         activeFileIndex: state.activeFileIndex,
         openFiles: state.openFiles,
         consoleLayout: state.consoleLayout,
@@ -22,6 +23,7 @@ export async function loadState() {
 
     // We explicitly return the saved state so modules can use it
     // but we also mutate the global state object for convenience
+    if (saved.files) state.files = saved.files;
     if (saved.activeFileIndex !== undefined) state.activeFileIndex = saved.activeFileIndex;
     if (saved.openFiles) state.openFiles = saved.openFiles;
     if (saved.consoleLayout) state.consoleLayout = saved.consoleLayout;

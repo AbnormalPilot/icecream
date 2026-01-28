@@ -3,13 +3,29 @@ import { setActiveTab, closeTab, renderTabs } from './tabs.js';
 import { getEditor } from './editor.js';
 
 // DOM Elements
-const fileList = document.getElementById('file-list');
-const newFileInput = document.getElementById('new-file-input');
-const newFileInputContainer = document.getElementById('new-file-input-container');
+// DOM Elements (fetched lazily or in init)
+let fileList;
+let newFileInput;
+let newFileInputContainer;
+
+// State for input mode
+let isRenaming = false;
+let renameTargetStr = '';
 
 export async function refreshFileList() {
-    state.files = await window.api.getFiles();
-    renderFileList();
+    try {
+        const files = await window.api.getFiles();
+        // console.log('Fetched files:', files);
+        if (Array.isArray(files)) {
+            state.files = files;
+            renderFileList();
+            saveState();
+        } else {
+            console.error('getFiles returned non-array:', files);
+        }
+    } catch (err) {
+        console.error('Failed to load files:', err);
+    }
 }
 
 export async function openFile(filename) {
@@ -49,10 +65,10 @@ export async function saveCurrentFile(silent = false) {
 }
 
 export async function createNewFile() {
-    // console.log('Create new file clicked');
-    // alert('Debug: + Button Clicked');
+    // Reset rename state just in case
+    isRenaming = false;
+    renameTargetStr = '';
 
-    // Logic moved from renderer.js - input toggle
     if (newFileInputContainer.style.display === 'none') {
         newFileInputContainer.style.display = 'block';
         newFileInput.value = '';
@@ -66,8 +82,6 @@ export async function createNewFile() {
 
 async function handleCreateFile(name) {
     if (!name) return;
-
-    // alert('Debug: Creating file: ' + name);
 
     // Check extension
     if (name.includes('.') && !name.endsWith('.js') && !name.endsWith('.py')) {
@@ -105,22 +119,52 @@ export async function deleteFile(filename) {
 }
 
 export async function renameFile(oldName) {
-    const newName = prompt('New filename:', oldName);
-    if (!newName || newName === oldName) return;
+    // Enable rename mode
+    isRenaming = true;
+    renameTargetStr = oldName;
 
-    const result = await window.api.renameFile(oldName, newName);
+    // Show input
+    newFileInputContainer.style.display = 'block';
+    newFileInput.value = oldName;
+    newFileInput.focus();
+    newFileInput.select();
+}
+
+async function handleRenameSubmit(newName) {
+    if (!newName || newName === renameTargetStr) {
+        newFileInputContainer.style.display = 'none';
+        isRenaming = false;
+        return;
+    }
+
+    const result = await window.api.renameFile(renameTargetStr, newName);
 
     if (result.success) {
         // Update state if open
-        const idx = state.openFiles.findIndex(f => f.name === oldName);
+        const idx = state.openFiles.findIndex(f => f.name === renameTargetStr);
         if (idx !== -1) {
-            state.openFiles[idx].name = newName.endsWith('.js') || newName.endsWith('.py') ? newName : newName;
-            // Note: Simplification here, main process usually preserves extension logic or we should logic it here
+            // Main process might add extension, but here we assume result.success implies the name we asked for (with logic)
+            // Ideally backend returns the actual new name
+
+            // Re-construct name with logic mirroring main process to be safe, or just trust the input + extension preservation logic
+            let finalName = newName;
+            const oldExt = renameTargetStr.includes('.') ? renameTargetStr.split('.').pop() : 'js';
+            if (!newName.endsWith('.js') && !newName.endsWith('.py')) {
+                finalName += '.' + oldExt;
+            }
+
+            state.openFiles[idx].name = finalName;
         }
         await refreshFileList();
         renderTabs();
         saveState();
+    } else {
+        alert('Rename failed: ' + result.error);
     }
+
+    newFileInputContainer.style.display = 'none';
+    isRenaming = false;
+    renameTargetStr = '';
 }
 
 export async function duplicateFile(filename) {
@@ -142,6 +186,9 @@ export async function duplicateFile(filename) {
 }
 
 export function renderFileList() {
+    if (!fileList) fileList = document.getElementById('file-list'); // Lazy init backup
+    if (!fileList) return;
+
     fileList.innerHTML = '';
     state.files.forEach(filename => {
         const item = document.createElement('div');
@@ -169,11 +216,6 @@ function showContextMenu(e, filename) {
     contextMenu.style.left = e.pageX + 'px';
     contextMenu.style.display = 'block';
 
-    // Store target file in module-level var or closure
-    // We'll attach handlers that use 'filename'
-
-    // Clear old handlers to avoid duplicates? Better: Recreate menu items or update global target
-    // We will use a simple approach: Set onclicks directly
     const ctxOpen = document.getElementById('ctx-open');
     if (ctxOpen) ctxOpen.onclick = () => { openFile(filename); };
 
@@ -186,7 +228,10 @@ function showContextMenu(e, filename) {
 
 export function initFiles() {
     console.log('Initializing Files module');
-    // alert('DEBUG: initFiles() called');
+
+    fileList = document.getElementById('file-list');
+    newFileInput = document.getElementById('new-file-input');
+    newFileInputContainer = document.getElementById('new-file-input-container');
 
     const newFileBtn = document.getElementById('new-file-btn');
     if (newFileBtn) {
@@ -197,20 +242,38 @@ export function initFiles() {
 
     // New File Input Listeners
     if (newFileInput) {
-        newFileInput.addEventListener('keydown', (e) => {
+        // Remove old listeners by cloning (simple way to wipe inline logic if any) or just add new one
+        // Note: multiple listeners will trigger if we kept old ones. 
+        // Best to replace element or use a flag. 
+        // Since initFiles is called once, we are good.
+
+        newFileInput.onkeydown = async (e) => {
             if (e.key === 'Enter') {
-                handleCreateFile(newFileInput.value.trim());
+                const val = newFileInput.value.trim();
+                if (isRenaming) {
+                    await handleRenameSubmit(val);
+                } else {
+                    await handleCreateFile(val);
+                }
             } else if (e.key === 'Escape') {
                 newFileInputContainer.style.display = 'none';
+                isRenaming = false;
+                renameTargetStr = '';
             }
-        });
+        };
 
-        // Blur listener
-        newFileInput.addEventListener('blur', () => {
+        // Blur listener - we might want to CANCEL on blur or submit
+        // Usually cancel is safer to avoid accidental creates
+        newFileInput.onblur = () => {
+            // Delay to allow click events (e.g. if user clicked a button) to register
             setTimeout(() => {
-                newFileInputContainer.style.display = 'none';
+                if (document.activeElement !== newFileInput) {
+                    newFileInputContainer.style.display = 'none';
+                    isRenaming = false;
+                    renameTargetStr = '';
+                }
             }, 200);
-        });
+        };
     }
 
     // Context menu hide
