@@ -1,0 +1,45 @@
+{
+  "name": "icecream",
+  "productName": "Icecream",
+  "version": "0.0.1",
+  "description": "An Electron-based JavaScript Compiler Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder && codesign --deep --force --sign - 'dist/mac-arm64/Icecream.app'"
+  },
+  "build": {
+    "asar": true,
+    "appId": "com.icecream.app",
+    "files": [
+      "**/*",
+      "!workspace/*",
+      "!**/.DS_Store",
+      "!**/._*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "identity": null,
+      "target": "dmg",
+      "icon": "assets/app-icon.png"
+    },
+    "dmg": {
+      "title": "Icecream"
+    }
+  },
+  "keywords": [
+    "electron",
+    "javascript",
+    "compiler"
+  ],
+  "author": "Himanshu",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^26.4.0"
+  },
+  "dependencies": {
+    "codemirror": "^5.65.16",
+    "jshint": "^2.13.6"
+  }
+}
