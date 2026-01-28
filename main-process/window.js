@@ -5,7 +5,7 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1000,
         height: 800,
-        show: false, // Don't show until ready
+        show: true, // Show immediately for perceived speed
         webPreferences: {
             preload: path.join(__dirname, '../preload.js'), // Adjusted path
             contextIsolation: true,
@@ -19,10 +19,10 @@ function createWindow() {
         trafficLightPosition: { x: 15, y: 15 } // Adjust for header
     });
 
-    // Only show window when page is fully rendered
-    mainWindow.once('ready-to-show', () => {
-        mainWindow.show();
-    });
+    // ready-to-show listener removed - window shows instantly
+    // mainWindow.once('ready-to-show', () => {
+    //    mainWindow.show();
+    // });
 
     mainWindow.loadFile('index.html');
 
