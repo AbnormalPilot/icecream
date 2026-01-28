@@ -1,0 +1,77 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  background: transparent;
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--glass-bg);
+  /* Reduce blur for solid themes or keep it? Keep it for style */
+  backdrop-filter: blur(25px); 
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px 0 80px;
+  height: 40px;
+  border-bottom: 1px solid var(--glass-border);
+  -webkit-app-region: drag;
+  background: rgba(0,0,0,0.1);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+footer {
+  height: 22px;
+  background: var(--glass-bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  justify-content: space-between;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+footer .status-bar-item {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+footer .status-bar-item:hover {
+  opacity: 1;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.4); border-radius: 5px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(128, 128, 128, 0.6); }

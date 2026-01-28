@@ -1,0 +1,77 @@
+/* Sidebar */
+#sidebar {
+  width: 200px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  zoom: var(--sidebar-zoom);
+}
+
+.sidebar-header {
+  padding: 10px 15px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono-font);
+}
+
+#new-file-btn {
+  background: none; border: none; color: inherit; cursor: pointer; font-size: 14px;
+}
+#new-file-btn:hover { color: var(--text-main); }
+
+#file-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px 0;
+}
+
+.file-item {
+  padding: 4px 15px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  font-family: var(--mono-font);
+}
+
+.file-item:hover {
+  background: var(--glass-highlight);
+  color: var(--text-main);
+}
+
+.file-item.active {
+  background: var(--glass-border);
+  color: var(--text-main);
+  border-left: 2px solid var(--accent-color);
+}
+
+/* JS Icon Badge */
+.file-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.python-icon {
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Resizers */
+#sidebar-resizer { width: 4px; cursor: col-resize; background: transparent; }
+#sidebar-resizer:hover { background: var(--accent-color); opacity: 0.5; }

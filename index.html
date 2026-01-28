@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <base href="./">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>icecream</title>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const details = `Error: ${message}\nSource: ${source}\nLine: ${lineno}\nCol: ${colno}\nStack: ${error ? error.stack : 'N/A'}`;
+            alert(details);
+            console.error(details);
+        };
+    </script>
+    <!-- Theme & Layout Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/console.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/whiteboard.css">
+    <!-- CodeMirror Styles -->
+    <link rel="stylesheet" href="assets/vendor/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="assets/vendor/codemirror/theme/dracula.css">
+    <link rel="stylesheet" href="assets/vendor/codemirror/theme/monokai.css">
+    <link rel="stylesheet" href="assets/vendor/codemirror/theme/material.css">
+    <link rel="stylesheet" href="assets/vendor/codemirror/theme/nord.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- CodeMirror Scripts -->
+    <script src="assets/vendor/codemirror/lib/codemirror.js"></script>
+    <script src="assets/vendor/codemirror/mode/javascript/javascript.js"></script>
+    <script src="assets/vendor/codemirror/mode/python/python.js"></script>
+    <script src="assets/vendor/codemirror/addon/edit/closebrackets.js"></script>
+    <script src="assets/vendor/codemirror/addon/edit/matchbrackets.js"></script>
+    <link rel="stylesheet" href="assets/vendor/codemirror/addon/lint/lint.css">
+    <script src="assets/vendor/jshint/jshint.js"></script>
+    <script src="assets/vendor/codemirror/addon/lint/lint.js"></script>
+    <script src="assets/vendor/codemirror/addon/lint/javascript-lint.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo-area">
+                <img src="assets/app-icon.png" class="logo-icon" alt="Icecream"> <span class="app-name">icecream</span>
+            </div>
+            <div class="controls">
+                <button id="whiteboard-btn" title="Open Whiteboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                </button>
+                <select id="theme-select" title="Change Theme">
+                    <option value="dracula">Dracula</option>
+                    <option value="monokai">Monokai</option>
+                    <option value="material">Material</option>
+                    <option value="nord">Nord</option>
+                    <option value="default">Light</option>
+                </select>
+                <button id="run-btn" class="primary" title="Run Code (Cmd+Enter)">Run <span style="opacity:0.7; font-size: 10px; margin-left: 4px;">⌘ ↵</span></button>
+            </div>
+        </header>
+        
+        <!-- Whiteboard Overlay -->
+        <div id="whiteboard-overlay">
+            <button id="whiteboard-close-btn" title="Close Whiteboard">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div id="whiteboard-colors">
+                <div class="color-dot active" data-color="#ffffff" style="background: #ffffff;"></div>
+                <div class="color-dot" data-color="#000000" style="background: #000000;"></div>
+                <div class="color-dot" data-color="#ff5555" style="background: #ff5555;"></div>
+                <div class="color-dot" data-color="#50fa7b" style="background: #50fa7b;"></div>
+                <div class="color-dot" data-color="#f1fa8c" style="background: #f1fa8c;"></div>
+                <div class="color-dot" data-color="#bd93f9" style="background: #bd93f9;"></div>
+            </div>
+            <canvas id="whiteboard-canvas"></canvas>
+        </div>
+
+        <div class="main-body">
+            <!-- Sidebar -->
+            <aside id="sidebar">
+                <div class="sidebar-header">
+                    <span>EXPLORER</span>
+                    <button id="new-file-btn" title="New File">+</button>
+                </div>
+                <div id="new-file-input-container" style="display: none; padding: 5px 10px;">
+                    <input type="text" id="new-file-input" placeholder="filename" style="width: 100%; background: #333; border: 1px solid #555; color: white; padding: 2px 4px; border-radius: 3px; outline: none;">
+                </div>
+                <div id="file-list">
+                    <!-- Files will be populated here -->
+                </div>
+            </aside>
+            
+            <div id="sidebar-resizer"></div>
+
+            <!-- Content Area (Editor + Console) -->
+            <div class="content-area" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                <!-- Editor Area -->
+                <section id="editor-area">
+                    <!-- Tabs -->
+                    <div id="tabs-container">
+                        <!-- Tabs will be populated here -->
+                    </div>
+
+                    <div id="code-container">
+                        <textarea id="code-editor"></textarea>
+                    </div>
+                </section>
+                
+                <div id="console-resizer"></div>
+
+                <!-- Console Area -->
+                <section id="console-panel">
+                    <div class="console-header">
+                        <div class="console-tabs">
+                            <button class="console-tab active" data-tab="input">Input</button>
+                            <button class="console-tab" data-tab="output">Output</button>
+                            <button class="console-tab" data-tab="errors">Errors</button>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button id="dock-toggle-btn" title="Toggle Layout (Bottom/Right)" style="background:none; border:none; color:inherit; cursor:pointer; opacity:0.7; display:flex; align-items:center;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="3" y1="15" x2="21" y2="15"></line>
+                                </svg>
+                            </button>
+                            <button id="clear-btn" title="Clear Console">✕</button>
+                        </div>
+                    </div>
+                    <div class="console-content">
+                        <div id="tab-input" class="console-tab-content active">
+                            <div class="input-wrapper">
+                                <div id="input-line-numbers" class="line-numbers-gutter">1</div>
+                                <textarea id="stdin-input"></textarea>
+                            </div>
+                        </div>
+                        <div id="tab-output" class="console-tab-content">
+                            <div id="output"></div>
+                        </div>
+                        <div id="tab-errors" class="console-tab-content">
+                            <div id="errors"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <footer>
+            <div class="status-bar-item" id="github-link" title="Open GitHub Profile" style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+                GitHub
+            </div>
+            <div class="status-bar-item right">Made with ❤️ by Himanshu</div>
+        </footer>
+    </div>
+
+    <div id="context-menu">
+        <div class="context-menu-item" id="ctx-open">Open</div>
+        <div class="context-menu-item" id="ctx-run">Run <span class="context-menu-shortcut">Cmd+Enter</span></div>
+        <div class="context-menu-item" id="ctx-rename">Rename</div>
+        <div class="context-menu-item" id="ctx-duplicate">Duplicate</div>
+        <div class="context-menu-item danger" id="ctx-delete">Delete</div>
+    </div>
+
+    <script type="module" src="renderer.js"></script>
+</body>
+</html>

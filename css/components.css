@@ -1,0 +1,93 @@
+.controls {
+  -webkit-app-region: no-drag;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#theme-select {
+  background: var(--glass-highlight);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  border-radius: 4px;
+  padding: 0 8px; /* Adjusted padding */
+  font-size: 11px;
+  outline: none;
+  height: 24px; /* Fixed height */
+  line-height: 22px;
+}
+#whiteboard-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-right: 6px;
+}
+
+#whiteboard-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+#theme-select option {
+  background: var(--bg-color);
+  color: var(--text-main);
+}
+
+button.primary {
+  background: var(--accent-color);
+  border: none;
+  color: var(--bg-color); 
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 0 12px; /* Adjusted padding */
+  font-size: 11px;
+  cursor: pointer;
+  height: 24px; /* Fixed height matching select */
+  display: flex;
+  align-items: center;
+}
+button.primary:hover { opacity: 0.9; }
+
+/* Context Menu */
+#context-menu {
+    position: fixed;
+    background: var(--sidebar-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    border-radius: 6px;
+    padding: 4px 0;
+    z-index: 1000;
+    display: none;
+    min-width: 160px;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-main);
+    font-family: var(--mono-font);
+}
+
+.context-menu-item:hover {
+    background: var(--glass-highlight);
+}
+
+.context-menu-item.danger {
+    color: #ff5555;
+}
+
+.context-menu-shortcut {
+    margin-left: 10px;
+}

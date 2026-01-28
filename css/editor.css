@@ -1,0 +1,39 @@
+/* CodeMirror Overrides */
+.CodeMirror {
+  height: 100% !important;
+  width: 100% !important;
+  font-family: var(--mono-font) !important;
+  font-size: calc(14px * var(--editor-zoom));
+  background-color: var(--editor-bg) !important;
+  color: var(--text-main) !important;
+  line-height: 1.6;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.CodeMirror-gutters {
+  background-color: var(--editor-bg) !important; 
+  border-right: 1px solid var(--glass-border) !important;
+  min-width: 40px;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 3;
+}
+
+.CodeMirror-linenumber {
+  color: var(--text-muted) !important;
+  padding: 0 8px 0 5px !important;
+  min-width: 25px;
+  text-align: right;
+}
+
+/* Allow text selection and input in CodeMirror */
+.CodeMirror,
+.CodeMirror * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
