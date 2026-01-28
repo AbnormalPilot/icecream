@@ -87,4 +87,25 @@ export function initConsole() {
     document.querySelectorAll('.console-tab').forEach(tab => {
         tab.addEventListener('click', () => switchConsoleTab(tab.dataset.tab));
     });
+
+    const lineNumbers = document.getElementById('input-line-numbers');
+    
+    const updateLineNumbers = () => {
+        const lines = stdinInput.value.split('\n').length;
+        lineNumbers.innerHTML = Array(lines).fill(0).map((_, i) => i + 1).join('\n');
+    };
+
+    const syncScroll = () => {
+        lineNumbers.scrollTop = stdinInput.scrollTop;
+    };
+
+    stdinInput.addEventListener('input', updateLineNumbers);
+    stdinInput.addEventListener('keydown', () => {
+        // Defer to handle Enter key allowing resize before calc
+        setTimeout(updateLineNumbers, 0); 
+    });
+    stdinInput.addEventListener('scroll', syncScroll);
+
+    // Init
+    updateLineNumbers();
 }
