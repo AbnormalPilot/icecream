@@ -44,3 +44,48 @@ textarea#code-editor {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
+
+/* Default: Hide editor, Show empty state (for instant welcome screen) */
+#code-container {
+    display: none;
+}
+
+/* Empty State */
+#editor-empty-state {
+    display: flex; /* Visible by default! */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1; /* Take remaining space in flex container */
+    width: 100%;
+    background-color: var(--editor-bg);
+    user-select: none;
+    padding-bottom: 50px; /* Visual balance */
+    z-index: 10;
+}
+
+#editor-empty-state .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 25px;
+    opacity: 0.8;
+}
+
+#editor-empty-state .empty-state-text {
+    font-family: 'Orbitron', 'Audiowide', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent-color);
+    letter-spacing: 6px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+#editor-empty-state .empty-state-sub {
+    font-family: var(--mono-font);
+    font-size: 14px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    opacity: 0.7;
+}

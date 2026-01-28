@@ -11,6 +11,7 @@ export function setActiveTab(index) {
     if (index >= 0 && state.openFiles[index]) {
         const file = state.openFiles[index];
         if (editor) {
+            editor.setOption('readOnly', false); // Enable editing
             editor.setValue(file.content);
             editor.clearHistory();
 
@@ -22,7 +23,10 @@ export function setActiveTab(index) {
             editor.setOption('lint', isPython ? false : { esversion: 11, asi: true, boss: true, expr: true, laxbreak: true, laxcomma: true, sub: true, undef: false, unused: false });
         }
     } else {
-        if (editor) editor.setValue('');
+        if (editor) {
+            editor.setValue('');
+            editor.setOption('readOnly', 'nocursor'); // Disable editing
+        }
     }
 
     renderTabs();
@@ -31,7 +35,7 @@ export function setActiveTab(index) {
 
     // Ensure editor is focused and ready
     setTimeout(() => {
-        if (editor) {
+        if (editor && index >= 0) { // Only focus if file is open
             editor.refresh();
             editor.focus();
         }
@@ -44,7 +48,10 @@ export function closeTab(index) {
     if (state.openFiles.length === 0) {
         state.activeFileIndex = -1;
         const editor = getEditor();
-        if (editor) editor.setValue('');
+        if (editor) {
+            editor.setValue('');
+            editor.setOption('readOnly', 'nocursor'); // Disable editing
+        }
     } else if (index <= state.activeFileIndex) {
         state.activeFileIndex = Math.max(0, state.activeFileIndex - 1);
         const editor = getEditor();
@@ -85,4 +92,17 @@ export function renderTabs() {
 
         tabsContainer.appendChild(tab);
     });
+
+    // Update empty state visibility
+    const emptyState = document.getElementById('editor-empty-state');
+    const codeContainer = document.getElementById('code-container');
+    if (emptyState && codeContainer) {
+        if (state.openFiles.length === 0) {
+            emptyState.style.display = 'flex';
+            codeContainer.style.display = 'none'; // Hide editor
+        } else {
+            emptyState.style.display = 'none';
+            codeContainer.style.display = 'block'; // Show editor
+        }
+    }
 }

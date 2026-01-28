@@ -106,8 +106,8 @@ export function initEditor() {
     }
 
 
-    // Force editor to be editable
-    editor.setOption('readOnly', false);
+    // Set initial readOnly state based on whether a file is open (usually false at start)
+    editor.setOption('readOnly', state.activeFileIndex === -1 ? 'nocursor' : false);
 
     // Auto-save on change
     editor.on('change', () => {
